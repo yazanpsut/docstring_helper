@@ -1,12 +1,11 @@
 # coding=utf-8
+import os
 import re
 from os import listdir
 from os.path import isfile
 from os.path import join
 
 __author__ = 'yazan'
-
-import os
 
 STRING_TO_THE_START_OF_FILE = "\"\"\"Example Google style docstrings.\n" \
                               "    This module demonstrates documentation as specified by the `Google Python\n" \
@@ -54,46 +53,53 @@ STRING_TO_BE_ADDED = "qqq\"\"\"\n" \
                      "qqq\"\"\"\n"
 
 CURRENT_PATH = os.path.abspath(os.path.dirname(__file__).decode('utf-8')).replace('\\', '/')
+
+
+def process_file(f, new_path):
+    if isfile(join(new_path, f)) and re.match('(views.py|models.py)', f):
+        index = 0
+        print f
+        my_file = open(new_path + '/' + f, "r")
+        searchlines = my_file.readlines()
+        my_file.close()
+        for i, line in enumerate(searchlines):
+            if "def " in line or "class" in line:
+                line_copy = line
+                indented_lines = STRING_TO_BE_ADDED
+                index_of_line_for_end_of_function = i
+                end_of_function_line_number = -1
+                while end_of_function_line_number == -1:
+                    end_of_function_line_number = searchlines[index_of_line_for_end_of_function].find(':')
+                    index_of_line_for_end_of_function += 1
+
+                if "\"\"\"" not in searchlines[index_of_line_for_end_of_function]:
+                    space_counter = 0
+                    if "def" in line:
+                        space_counter = line.index('d')
+                    else:
+                        space_counter = line.index('c')
+                    for space in range(0, line.count(' ', 0, space_counter)):
+                        indented_lines = indented_lines.replace('qqq', ' qqq')
+                    indented_lines = indented_lines.replace('qqq', '    ')
+                    searchlines.insert(index_of_line_for_end_of_function, indented_lines)
+
+        my_file = open(new_path + '/' + f, "w")
+        if searchlines[0].startswith("#"):
+            searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
+        else:
+            searchlines.insert(0, "# coding=utf-8\n")
+            searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
+
+        my_file.writelines(searchlines)
+        my_file.close()
+
+
 for dirname in os.listdir(CURRENT_PATH):
     # print path to all subdirectories first.
+    process_file(dirname, CURRENT_PATH)
     if not (dirname.__contains__('.') or dirname.__contains__('-')):
         os.chdir(os.path.join(CURRENT_PATH, dirname))
         new_path = os.path.join(CURRENT_PATH, dirname)
         for f in listdir(new_path):
-            if isfile(join(new_path, f)) and re.match('(views.py|models.py)', f):
-                index = 0
-                print f
-                my_file = open(new_path + '/' + f, "r")
-                searchlines = my_file.readlines()
-                my_file.close()
-                for i, line in enumerate(searchlines):
-                    if "def " in line or "class" in line:
-                        line_copy = line
-                        indented_lines = STRING_TO_BE_ADDED
-                        index_of_line_for_end_of_function = i
-                        end_of_function_line_number = -1
-                        while end_of_function_line_number == -1:
-                            end_of_function_line_number = searchlines[index_of_line_for_end_of_function].find(':')
-                            index_of_line_for_end_of_function += 1
-
-                        if "\"\"\"" not in searchlines[index_of_line_for_end_of_function]:
-                            space_counter = 0
-                            if "def" in line:
-                                space_counter = line.index('d')
-                            else:
-                                space_counter = line.index('c')
-                            for space in range(0, line.count(' ', 0, space_counter)):
-                                indented_lines = indented_lines.replace('qqq', ' qqq')
-                            indented_lines = indented_lines.replace('qqq', '    ')
-                            searchlines.insert(index_of_line_for_end_of_function, indented_lines)
-
-                my_file = open(new_path + '/' + f, "w")
-                if searchlines[0].startswith("#"):
-                    searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
-                else:
-                    searchlines.insert(0, "# coding=utf-8\n")
-                    searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
-
-                my_file.writelines(searchlines)
-                my_file.close()
+            process_file(f, new_path)
         os.chdir(os.path.join(CURRENT_PATH, ".."))
