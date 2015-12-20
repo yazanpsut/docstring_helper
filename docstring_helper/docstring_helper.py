@@ -65,6 +65,8 @@ def process_file(f, new_path):
         for i, line in enumerate(searchlines):
             if "def " in line or "class" in line:
                 line_copy = line
+                if line_copy.strip().startswith('#'):
+                    continue
                 indented_lines = STRING_TO_BE_ADDED
                 index_of_line_for_end_of_function = i
                 end_of_function_line_number = -1
