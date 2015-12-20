@@ -8,7 +8,7 @@ __author__ = 'yazan'
 
 import os
 
-string_to_the_start_of_file = "\"\"\"Example Google style docstrings.\n" \
+STRING_TO_THE_START_OF_FILE = "\"\"\"Example Google style docstrings.\n" \
                               "    This module demonstrates documentation as specified by the `Google Python\n" \
                               "    Style Guide`_. Docstrings may extend over multiple lines. Sections are created\n" \
                               "    with a section header and a colon followed by a block of indented text.\n" \
@@ -27,7 +27,7 @@ string_to_the_start_of_file = "\"\"\"Example Google style docstrings.\n" \
                               "            one convention to document module level variables and be consistent\n" \
                               "            with it.\n" \
                               "\"\"\"\n"
-string_to_be_added = "qqq\"\"\"\n" \
+STRING_TO_BE_ADDED = "qqq\"\"\"\n" \
                      "qqqSmall description about the function\n" \
                      "qqqArgs:\n" \
                      "qqq    param1 (int): The first parameter.\n" \
@@ -68,7 +68,8 @@ for dirname in os.listdir(CURRENT_PATH):
                 my_file.close()
                 for i, line in enumerate(searchlines):
                     if "def " in line or "class" in line:
-                        indented_lines = string_to_be_added
+                        line_copy = line
+                        indented_lines = STRING_TO_BE_ADDED
                         index_of_line_for_end_of_function = i
                         end_of_function_line_number = -1
                         while end_of_function_line_number == -1:
@@ -77,10 +78,10 @@ for dirname in os.listdir(CURRENT_PATH):
 
                         if "\"\"\"" not in searchlines[index_of_line_for_end_of_function]:
                             space_counter = 0
-                            if "class" in line:
-                                space_counter = line.index('c')
-                            else:
+                            if "def" in line:
                                 space_counter = line.index('d')
+                            else:
+                                space_counter = line.index('c')
                             for space in range(0, line.count(' ', 0, space_counter)):
                                 indented_lines = indented_lines.replace('qqq', ' qqq')
                             indented_lines = indented_lines.replace('qqq', '    ')
@@ -88,10 +89,10 @@ for dirname in os.listdir(CURRENT_PATH):
 
                 my_file = open(new_path + '/' + f, "w")
                 if searchlines[0].startswith("#"):
-                    searchlines.insert(1, string_to_the_start_of_file)
+                    searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
                 else:
                     searchlines.insert(0, "# coding=utf-8\n")
-                    searchlines.insert(1, string_to_the_start_of_file)
+                    searchlines.insert(1, STRING_TO_THE_START_OF_FILE)
 
                 my_file.writelines(searchlines)
                 my_file.close()
